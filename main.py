@@ -558,7 +558,18 @@ def main() -> int:
     except Exception as e:
         logger.exception(f"程序执行失败: {e}")
         return 1
-
+        
+if __name__ == "__main__":
+    # 原有自选股分析
+    analyze_selected_stocks()
+    
+    # 新增：扫描候选池
+    candidates = filter_candidate_pool()
+    candidate_report = generate_candidate_report(candidates)
+    
+    # 合并报告并推送
+    full_report = candidate_report + "\n\n" + selected_report
+    send_to_wechat(full_report)  # 或其他推送方式
 
 if __name__ == "__main__":
     sys.exit(main())
