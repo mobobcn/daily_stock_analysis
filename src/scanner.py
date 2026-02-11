@@ -49,3 +49,26 @@ def filter_candidate_pool():
     # 按分数排序，取前 20-30
     candidates.sort(key=lambda x: x['score'], reverse=True)
     return candidates[:30]
+
+
+def calculate_opportunity_score(tech, stock_row):
+    score = 0
+    if tech['ma5'] > tech['ma10'] > tech['ma20']:
+        score += 40
+    elif tech['ma5'] >= tech['ma10'] * 0.99:
+        score += 25  # 接近多头也给分
+    score += max(0, 20 - abs(tech['bias_ma5'])) * 2  # 乖离越小越好
+    if tech['turnover_rate'] > 3:
+        score += 20  # 换手活跃
+    if stock_row['涨跌幅'] > -3 and stock_row['涨跌幅'] < 5:  # 避免已暴涨股
+        score += 15
+    # 可加：业绩预增、机构评级等（如果有数据源）
+    return min(score, 100)
+
+def generate_candidate_report(candidates):
+    report = "# 每日候选机会池\n\n"
+    for item in candidates[:15]:  # 取前15
+        report += f"**{item['code']} {item['name']}** | 评分: {item['score']:.0f}\n"
+        report += f"价格: {item['price']:.2f} | 理由: {item['key_reason']}\n"
+        report += f"均线状态: {item['ma_status']}\n\n---\n"
+    return report
